@@ -15,19 +15,25 @@ from camvidreader import CamvidReader
 Sky = [128,128,128]
 Building = [128,0,0]
 Pole = [192,192,128]
+
 Road_marking = [255,69,0]
 Road = [128,64,128]
 Pavement = [60,40,222]
+
 Tree = [128,128,0]
 SignSymbol = [192,128,128]
 Fence = [64,64,128]
+
 Car = [64,0,128]
 Pedestrian = [64,64,0]
 Bicyclist = [0,128,192]
+
 Unlabelled = [0,0,0]
 
 label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
 
+label_names = ["Sky", "Building", "Pole", "Road marking", "Road", "Pavement", "Tree", "SignSymbol", "Fence",
+               "Car", "Pedestrian", "Bicyclist", "Unlabelled"]
 
 norm = [104.00699, 116.66877, 122.67892]
 
@@ -86,11 +92,21 @@ if __name__ == '__main__':
 
         plt.figure(1)
 
-        ax = plt.subplot(1,2,1)        
+        ax = plt.subplot(1,3,1)
+        ax.set_title("Original")
         plt.imshow(img, vmin=0, vmax=255)
         
-        ax = plt.subplot(1,2,2)        
-        plt.imshow(tar, vmin=0, vmax=255)        
+        ax = plt.subplot(1,3,2)
+        ax.set_title("Segmentet")        
+        plt.imshow(tar, vmin=0, vmax=255)
+
+        ax = plt.subplot(1,3,3)
+        ax.patch.set_alpha(0)
+        ax.axis('off')
+        for t in range(len(label_colours)):
+            print(label_names[t])
+            ax.plot(1, t, 'o', color = np.array(label_colours[t])/256)
+            ax.text(2, t, label_names[t], fontsize=10, color='black')
 
         plt.show(block=False)
 

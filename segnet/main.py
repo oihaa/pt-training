@@ -1,4 +1,6 @@
 
+import argparse
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -10,24 +12,29 @@ from segnet import SegNet
 
 if __name__ == '__main__':
 
-    par = {'batch_size' : 2,
-           'test_batch_size' : 10,
-           'epochs' : 10,
-           'learning_rate' : 0.01,
-           'momentum' : 0.5,
-           'seed' : 1,
-           'processes' : 2}
+    parser = argparse.ArgumentParser(description='Segnet training')
+    parser.add_argument('--disable_cuda', action='store_true',
+                        help='Disable CUDA')
 
-    torch.manual_seed(par['seed'])
+    args = parser.parse_args()
+
+    args.cuda = not args.disable_cuda and torch.cuda.is_available()
+    args.batch_size = 10
+    args.test_batch_size = 10
+    args.epochs = 60
+    args.seed = 1
+
+        
+    torch.manual_seed(args.seed)
+    if args.cuda:
+        torch.cuda.manual_seed(1)
 
     model = SegNet(3,13)
-    model.share_memory() 
     model.initialized_with_pretrained_weights()
+    model = nn.DataParallel(model)
     
-    processes = []
-    for rank in range(1):
-        p = mp.Process(target=do_train, args=(rank, par, model))
-        p.start()
-        processes.append(p)
-    for p in processes:
-        p.join()
+    if args.cuda:
+        model.cuda()
+    
+    model.share_memory() 
+    do_train(1, args, model)
