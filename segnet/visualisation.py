@@ -11,7 +11,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 from torchvision import datasets, transforms
 
-from camvidreader import CamvidReader
+import camvidreader
 
 Sky = [128,128,128]
 Building = [128,0,0]
@@ -51,24 +51,9 @@ def convert_target(img):
     
 
 def setup():
-    
-    train_loader = torch.utils.data.DataLoader(
-        CamvidReader(folder="CamVid", mode="train",
-                     transform=transforms.Compose([                      
-                         transforms.ToTensor(),
-                         transforms.Normalize((104.00699, 116.66877, 122.67892),(1,1,1))       
-                     ])
-        ),
-        batch_size=1, shuffle=False, num_workers=1)
 
-    test_loader = torch.utils.data.DataLoader(
-        CamvidReader(folder="CamVid", mode="test",
-                      transform=transforms.Compose([
-                          transforms.ToTensor(),
-                          transforms.Normalize((104.00699, 116.66877, 122.67892),(1,1,1))       
-                      ])
-        ),
-        batch_size=1, shuffle=False, num_workers=1)
+
+    train_loader, validation_loader, test_loader = camvidreader.get_default_datasets(1, 1, 1)
 
     return train_loader, test_loader
 
@@ -85,7 +70,6 @@ if __name__ == '__main__':
         img = img.reshape(img.shape[1],img.shape[2],img.shape[3])
         img = img.transpose(1,2,0)
 
-        img = img + norm
         
         tar = target.numpy()
         tar = tar.reshape(tar.shape[1],tar.shape[2])

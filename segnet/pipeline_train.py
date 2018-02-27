@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
-from camvidreader import CamvidReader
+import camvidreader 
 
 #    weight_by_label_freqs: true
 #    ignore_label: 11
@@ -43,32 +43,17 @@ def adjust_learning_rate(optimizer, lr):
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
-def do_train(rank, args, model):
+def do_train(args, model):
 
-    plt.ion()
-    torch.manual_seed(args.seed + rank)
+    torch.manual_seed(args.seed)
+
+    train_loader, validation_loader, test_loader = camvidreader.get_default_datasets(
+        args.batch_size,
+        args.test_batch_size,
+        args.test_batch_size)
+
     
-    train_loader = torch.utils.data.DataLoader(
-        CamvidReader(folder="CamVid", mode="train",
-                     transform=transforms.Compose([                      
-                         transforms.ToTensor()#,
-#                         transforms.Normalize((104.00699, 116.66877, 122.67892),(1,1,1))       
-                     ])
-        ),
-        batch_size=args.batch_size, shuffle=True, num_workers=1)
-
-    validation_loader = torch.utils.data.DataLoader(
-        CamvidReader(folder="CamVid", mode="val",
-                      transform=transforms.Compose([
-                          transforms.ToTensor()#,
-#                          transforms.Normalize((104.00699, 116.66877, 122.67892),(1,1,1))       
-                      ])
-        ),
-        batch_size=args.test_batch_size, shuffle=True, num_workers=1)
-
     optimizer = optim.SGD(model.parameters(), lr=0.1)
-
-#    scheduler = optim.lr_scheduer.StepLR(optimizer, step_size=8, gamma=0.5)
 
     
     for epoch in range(args.epochs):      
@@ -92,7 +77,10 @@ def train(epoch, args, model, data_loader, optimizer):
         data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
         output = model(data)        
-        loss = F.nll_loss(F.log_softmax(output), target.long(),weight=torch.FloatTensor(weights).cuda(), ignore_index=11)
+        loss = F.nll_loss(F.log_softmax(output),
+                          target.long(),
+                          weight=torch.FloatTensor(weights).cuda(),
+                          ignore_index=11)
         loss.backward()
         optimizer.step()
         if b_idx % 10 == 0:
@@ -105,7 +93,6 @@ def test(epoch, model, args, data_loader):
     model.eval()
     test_loss = 0
     correct = 0
-    first =  True
     predictions = []
     targets = []
 
