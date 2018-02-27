@@ -8,7 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pickle
 
-label_names = ["Sky", "Building", "Pole", "Road marking", "Road", "Pavement", "Tree", "SignSymbol", "Fence",
+label_names = ["Sky", "Building", "Pole", "Road", "Pavement", "Tree", "SignSymbol", "Fence",
                "Car", "Pedestrian", "Bicyclist", "Unlabelled"]
 
 

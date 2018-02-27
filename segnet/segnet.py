@@ -105,39 +105,39 @@ class SegNet(nn.Module):
         size3 = x33.size()
 
         # Stage 4
-        x41 = F.relu(self.bn41(self.conv41(self.drop33(x3p))))
+        x41 = F.relu(self.bn41(self.conv41(F.dropout(x3p, training=self.training))))
         x42 = F.relu(self.bn42(self.conv42(x41)))
         x43 = F.relu(self.bn43(self.conv43(x42)))
         x4p, id4 = F.max_pool2d(x43, kernel_size=2, stride=2, return_indices=True)
         size4 = x43.size()
 
         # Stage 5
-        x51 = F.relu(self.bn51(self.conv51(self.drop43(x4p))))
+        x51 = F.relu(self.bn51(self.conv51(F.dropout(x4p, training=self.training))))
         x52 = F.relu(self.bn52(self.conv52(x51)))
         x53 = F.relu(self.bn53(self.conv53(x52)))
         x5p, id5 = F.max_pool2d(x53, kernel_size=2, stride=2, return_indices=True)
         size5 = x53.size()
 
         # Stage 5d
-        x5d = F.max_unpool2d(self.drop53(x5p), id5, kernel_size=2, stride=2, output_size=size5)
+        x5d = F.max_unpool2d(F.dropout(x5p, training=self.training), id5, kernel_size=2, stride=2, output_size=size5)
         x53d = F.relu(self.bn53d(self.conv53d(x5d)))
         x52d = F.relu(self.bn52d(self.conv52d(x53d)))
         x51d = F.relu(self.bn51d(self.conv51d(x52d)))
 
         # Stage 4d
-        x4d = F.max_unpool2d(self.drop51d(x51d), id4, kernel_size=2, stride=2, output_size=size4)
+        x4d = F.max_unpool2d(F.dropout(x51d, training=self.training), id4, kernel_size=2, stride=2, output_size=size4)
         x43d = F.relu(self.bn43d(self.conv43d(x4d)))
         x42d = F.relu(self.bn42d(self.conv42d(x43d)))
         x41d = F.relu(self.bn41d(self.conv41d(x42d)))
 
         # Stage 3d
-        x3d = F.max_unpool2d(self.drop41d(x41d), id3, kernel_size=2, stride=2, output_size=size3)
+        x3d = F.max_unpool2d(F.dropout(x41d, training=self.training), id3, kernel_size=2, stride=2, output_size=size3)
         x33d = F.relu(self.bn33d(self.conv33d(x3d)))
         x32d = F.relu(self.bn32d(self.conv32d(x33d)))
         x31d = F.relu(self.bn31d(self.conv31d(x32d)))
 
         # Stage 2d
-        x2d = F.max_unpool2d(self.drop31d(x31d), id2, kernel_size=2, stride=2, output_size=size2)
+        x2d = F.max_unpool2d(F.dropout(x31d, training=self.training), id2, kernel_size=2, stride=2, output_size=size2)
         x22d = F.relu(self.bn22d(self.conv22d(x2d)))
         x21d = F.relu(self.bn21d(self.conv21d(x22d)))
 

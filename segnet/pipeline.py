@@ -28,8 +28,7 @@ weights = [
     0.6823,
     6.2478,
     7.3614,
-    1,00,
-    1.00,]
+    0]
 
 n_pixel = 480*360
 
@@ -76,7 +75,7 @@ def do_train(rank, args, model):
         train(epoch, args, model, train_loader, optimizer)
         test(epoch, model, args, validation_loader)
 
-        if (epoch > 1) and (epoch % 8) == 0:
+        if (epoch > 1) and (epoch % 10) == 0:
             lr_rate = get_learning_rate(optimizer)[0]
             lr_rate *= 0.5
             print("Setting learning rate to: ", lr_rate)            
@@ -93,7 +92,7 @@ def train(epoch, args, model, data_loader, optimizer):
         data, target = Variable(data), Variable(target)
         optimizer.zero_grad()
         output = model(data)        
-        loss = F.nll_loss(F.log_softmax(output), target.long())
+        loss = F.nll_loss(F.log_softmax(output), target.long(),weight=torch.FloatTensor(weights).cuda(), ignore_index=11)
         loss.backward()
         optimizer.step()
         if b_idx % 10 == 0:
