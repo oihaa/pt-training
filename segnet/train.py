@@ -23,6 +23,8 @@ if __name__ == '__main__':
                         default=60, help='Number of epochs used for training')
     parser.add_argument('--seed', action='store', dest='seed',
                         default=1, help='Pytorch seed')
+    parser.add_argument('--result-folder', action='store', dest='result-folder',
+                        default='results', help='Where to store result files')
 
 
     args = parser.parse_args()

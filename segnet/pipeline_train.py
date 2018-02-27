@@ -33,9 +33,8 @@ weights = [
 n_pixel = 480*360
 
 def get_learning_rate(optimizer):
-    lr=[]
     for param_group in optimizer.param_groups:
-       lr +=[ param_group['lr'] ]
+       lr =[ param_group['lr'] ]
     return lr
 
 
@@ -47,6 +46,7 @@ def do_train(args, model):
 
     torch.manual_seed(args.seed)
 
+    
     train_loader, validation_loader, test_loader = camvidreader.get_default_datasets(
         args.batch_size,
         args.test_batch_size,
@@ -55,17 +55,21 @@ def do_train(args, model):
     
     optimizer = optim.SGD(model.parameters(), lr=0.1)
 
+    test_metrics = []
     
     for epoch in range(args.epochs):      
         train(epoch, args, model, train_loader, optimizer)
-        test(epoch, model, args, validation_loader)
+        metrics = test(epoch, model, args, validation_loader)
+
+        test_metrics.append(metrics)
 
         if (epoch > 1) and (epoch % 10) == 0:
-            lr_rate = get_learning_rate(optimizer)[0]
+            lr_rate = get_learning_rate(optimizer)
             lr_rate *= 0.5
             print("Setting learning rate to: ", lr_rate)            
             adjust_learning_rate(optimizer, lr_rate)
-    torch.save(model.state_dict(), "segnet" + str(epoch))
+    save_metrics(args.result-folder,test_metrics)            
+    torch.save(model.state_dict(), args.result-folder + "/" + "segnet")
 
 
 def train(epoch, args, model, data_loader, optimizer): 
@@ -110,12 +114,13 @@ def test(epoch, model, args, data_loader):
         targets.append(target.data.cpu().numpy())
         
     con_mat = create_confusion(predictions, targets)
-    save_confusion_matrix(epoch, con_mat)
+    save_confusion_matrix(args.result-folder, epoch, con_mat)
     correct = correct / n_pixel
     test_loss = test_loss / n_pixel
     test_loss /= len(data_loader.dataset)  
     print('\tTest set: Average loss:  \t{:.4f},\t Accuray: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct,len(data_loader.dataset), 100. * correct / len(data_loader.dataset)))
+    return (test_loss, 100. * correct / len(data_loader.dataset))
 
 
 
@@ -124,12 +129,17 @@ def create_confusion(predictions, targets):
     targ = np.concatenate(targets, axis=0)
 
     matrix = confusion_matrix(targ.reshape(-1),pred.reshape(-1) )
-    print(matrix)
+    
     return matrix
 
-def save_confusion_matrix(id, matrix):
-    with open("results/" + '{:03d}'.format(id), "wb") as pf:
+def save_confusion_matrix(folder, id, matrix):
+    with open(folder + "/" + '{:03d}'.format(id), "wb") as pf:
         pickle.dump(matrix, pf)
+        pf.close()
+
+def save_metrics(folder, metrics):
+    with open(folder + "/" + "Test-metrics, "wb") as pf:
+        pickle.dump(metrics, pf)
         pf.close()
 
     
