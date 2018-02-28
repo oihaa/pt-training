@@ -23,7 +23,7 @@ if __name__ == '__main__':
                         default=60, help='Number of epochs used for training')
     parser.add_argument('--seed', action='store', dest='seed',
                         default=1, help='Pytorch seed')
-    parser.add_argument('--result-folder', action='store', dest='result-folder',
+    parser.add_argument('--result_folder', action='store', dest='result_folder',
                         default='results', help='Where to store result files')
 
 
@@ -37,6 +37,7 @@ if __name__ == '__main__':
         torch.cuda.manual_seed(1)
 
     model = SegNet(3,12)
+
     model.initialized_with_pretrained_weights()
     model = nn.DataParallel(model)
     

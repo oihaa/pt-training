@@ -60,16 +60,15 @@ def do_train(args, model):
     for epoch in range(args.epochs):      
         train(epoch, args, model, train_loader, optimizer)
         metrics = test(epoch, model, args, validation_loader)
-
         test_metrics.append(metrics)
 
         if (epoch > 1) and (epoch % 10) == 0:
-            lr_rate = get_learning_rate(optimizer)
+            lr_rate = get_learning_rate(optimizer)[0]
             lr_rate *= 0.5
             print("Setting learning rate to: ", lr_rate)            
             adjust_learning_rate(optimizer, lr_rate)
-    save_metrics(args.result-folder,test_metrics)            
-    torch.save(model.state_dict(), args.result-folder + "/" + "segnet")
+    save_metrics(args.result_folder,test_metrics)            
+    torch.save(model.state_dict(), args.result_folder + "/" + "segnet")
 
 
 def train(epoch, args, model, data_loader, optimizer): 
@@ -114,7 +113,7 @@ def test(epoch, model, args, data_loader):
         targets.append(target.data.cpu().numpy())
         
     con_mat = create_confusion(predictions, targets)
-    save_confusion_matrix(args.result-folder, epoch, con_mat)
+    save_confusion_matrix(args.result_folder, epoch, con_mat)
     correct = correct / n_pixel
     test_loss = test_loss / n_pixel
     test_loss /= len(data_loader.dataset)  
@@ -138,7 +137,7 @@ def save_confusion_matrix(folder, id, matrix):
         pf.close()
 
 def save_metrics(folder, metrics):
-    with open(folder + "/" + "Test-metrics, "wb") as pf:
+    with open(folder + "/Test-metrics", "wb") as pf:
         pickle.dump(metrics, pf)
         pf.close()
 
