@@ -46,7 +46,7 @@ class CamvidReader(Dataset):
 
 
 
-        return img, label    
+        return img, label, file_name    
 
 
 def get_default_datasets(batch_size, val_batch_size, test_batch_size):
