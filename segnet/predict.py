@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.multiprocessing as mp
 
-from pipeline_train import do_train
-from segnet import SegNet
+from pipeline_predict import do_predict
+from segnet import SegNet#Maybe with dropout
 
 
 if __name__ == '__main__':
@@ -16,14 +16,14 @@ if __name__ == '__main__':
     parser.add_argument('--disable_cuda', action='store_true',
                         help='Disable CUDA')
     parser.add_argument('--batch_size', action='store', dest='batch_size',
-                        default=10, help='Size of minibatch for training')
+                        default=10, help='Size of minibatch')
     parser.add_argument('--test_batch_size', action='store', dest='test_batch_size',
-                        default=10, help='Size of minibatch for testing')
-    parser.add_argument('--epochs', action='store', dest='epochs',
-                        default=60, help='Number of epochs used for training')
+                        default=10, help='Size of test minibatch')
     parser.add_argument('--seed', action='store', dest='seed',
                         default=1, help='Pytorch seed')
-    parser.add_argument('--result_folder', action='store', dest='result_folder',
+    parser.add_argument('--model', action='store', dest='model',
+                        default='results/segnet', help='Name of the model file')
+    parser.add_argument('--result-folder', action='store', dest='result-folder',
                         default='results', help='Where to store result files')
 
 
@@ -39,6 +39,12 @@ if __name__ == '__main__':
     model = SegNet(3,12)
 
     model.initialized_with_pretrained_weights()
+    
+    #print(model.state_dict().keys())
+
+    state_dict = torch.load(args.model)
+    #print(state_dict.keys())
+
 
 
     model = nn.DataParallel(model)
@@ -47,5 +53,5 @@ if __name__ == '__main__':
         model.cuda()
     
     model.share_memory()
-    print(model.state_dict().keys())    
-    do_train(args, model)
+    model.load_state_dict(state_dict)    
+    do_predict(args, model)

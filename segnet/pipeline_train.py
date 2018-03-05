@@ -55,7 +55,7 @@ def do_train(args, model):
     optimizer = optim.SGD(model.parameters(), lr=0.1)
 
     test_metrics = []
-    
+
     for epoch in range(args.epochs):      
         train(epoch, args, model, train_loader, optimizer)
         metrics = test(epoch, model, args, validation_loader)
